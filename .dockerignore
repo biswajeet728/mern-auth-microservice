@@ -5,3 +5,4 @@ npm-debug.log
 .env.dev
 .env.prod
 logs
+docker-command.txt
