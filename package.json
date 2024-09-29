@@ -1,0 +1,33 @@
+{
+  "name": "mern-auth-service",
+  "version": "1.0.0",
+  "description": "Microserice Architecture Based Auth Service using Mern Stack ",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "dev": "cross-env NODE_ENV=dev nodemon --legacy-watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "db:generate": "drizzle-kit generate --config=src/drizzle.config.ts",
+    "db:run": "node -r esbuild-register src/migrate.ts",
+    "db:studio": "npx drizzle-kit studio --config=src/drizzle.config.ts"
+  },
+  "author": "Biswajeet Dash",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.33.0",
+    "express": "^4.19.2",
+    "mysql2": "^3.11.3",
+    "winston": "^3.14.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.2.0",
+    "@types/winston": "^2.4.4",
+    "cross-env": "^7.0.3",
+    "drizzle-kit": "^0.24.2",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2"
+  }
+}

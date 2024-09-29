@@ -1,0 +1,7 @@
+node_modules
+docker
+npm-debug.log
+.env
+.env.dev
+.env.prod
+logs
