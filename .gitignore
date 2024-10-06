@@ -137,4 +137,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# add docker compose file
+docker-compose.yaml
 docker-command.txt

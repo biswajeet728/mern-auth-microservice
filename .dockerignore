@@ -5,4 +5,5 @@ npm-debug.log
 .env.dev
 .env.prod
 logs
+docker-compose.yaml
 docker-command.txt
