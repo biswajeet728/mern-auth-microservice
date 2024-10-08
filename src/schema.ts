@@ -24,7 +24,7 @@ export const refreshTokens = mysqlTable("refresh_tokens", {
   userId: bigint("user_id", { mode: "bigint" }) // Ensure BIGINT matches users.id
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  token: varchar("token", { length: 100 }).notNull(),
+  expiresAt: timestamp("expires_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });

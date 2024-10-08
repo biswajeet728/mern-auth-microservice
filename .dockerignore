@@ -7,3 +7,4 @@ npm-debug.log
 logs
 docker-compose.yaml
 docker-command.txt
+certs/

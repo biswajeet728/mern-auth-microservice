@@ -1,7 +1,7 @@
 CREATE TABLE `refresh_tokens` (
 	`id` bigint AUTO_INCREMENT NOT NULL,
 	`user_id` bigint NOT NULL,
-	`token` varchar(100) NOT NULL,
+	`expires_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `refresh_tokens_id` PRIMARY KEY(`id`)

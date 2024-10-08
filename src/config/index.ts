@@ -16,6 +16,8 @@ const {
   MYSQL_USER,
   MYSQL_DATABASE,
   MYSQL_URI,
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
 } = process.env;
 
 export const Config = {
@@ -26,4 +28,6 @@ export const Config = {
   MYSQL_USER,
   MYSQL_DATABASE,
   MYSQL_URI,
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
 };

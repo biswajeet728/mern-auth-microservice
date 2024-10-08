@@ -15,3 +15,9 @@ export interface UserData {
 export interface RegisterUserRequest extends Request {
   body: UserData;
 }
+
+export interface UserRespose extends UserData {
+  id: number;
+  updatedAt: Date;
+  createdAt: Date;
+}
