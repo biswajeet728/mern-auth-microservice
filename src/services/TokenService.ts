@@ -5,21 +5,9 @@ import { UserRespose } from "../types";
 import { db } from "../config/db";
 import { refreshTokens } from "../schema";
 import { eq } from "drizzle-orm";
-import path from "path";
-import fs from "fs";
 
 export const generateAccessToken = (payload: JwtPayload) => {
-  let privateKey: Buffer;
-
-  try {
-    privateKey = fs.readFileSync(path.join(__dirname, "../certs/private.pem"));
-  } catch (err) {
-    const error = createHttpError(500, "Error while reading private key");
-    throw error;
-  }
-
-  const token = sign(payload, privateKey, {
-    algorithm: "RS256",
+  const token = sign(payload, Config.JWT_SECRET!, {
     expiresIn: "1d",
     issuer: "auth-service",
   });
@@ -30,7 +18,6 @@ export const generateAccessToken = (payload: JwtPayload) => {
 export const generateRefreshToken = (payload: JwtPayload) => {
   // Ensure payload.id is a string to avoid BigInt issues
   const token = sign(payload, Config.REFRESH_TOKEN_SECRET!, {
-    algorithm: "HS256",
     expiresIn: "1y",
     issuer: "auth-service",
     jwtid: String(payload.id), // Convert to string

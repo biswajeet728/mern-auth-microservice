@@ -126,3 +126,9 @@ export const login = async (
     return;
   }
 };
+
+export const getMe = async (req: RegisterUserRequest, res: Response) => {
+  const user = req.user;
+
+  res.status(200).json(user);
+};

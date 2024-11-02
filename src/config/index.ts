@@ -18,6 +18,7 @@ const {
   MYSQL_URI,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
+  JWT_SECRET,
 } = process.env;
 
 export const Config = {
@@ -30,4 +31,5 @@ export const Config = {
   MYSQL_URI,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
+  JWT_SECRET,
 };
