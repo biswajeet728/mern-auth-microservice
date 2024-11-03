@@ -143,64 +143,74 @@ export const getMe = async (req: RegisterUserRequest, res: Response) => {
   res.status(200).json(user);
 };
 
+// Controller logic
 export const getNewAccessToken = async (
   req: RegisterUserRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const refToken = req.headers.authorization || req.cookies.refreshToken;
+    const authHeader = req.headers.authorization;
+    const refToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : req.cookies.refreshToken;
 
     if (!refToken) {
-      const err = createHttpError(401, "Unauthorized");
-      next(err);
-      return;
+      return next(createHttpError(401, "Unauthorized"));
     }
 
-    const decoded = verify(
-      refToken,
-      Config.REFRESH_TOKEN_SECRET!
-    ) as JwtPayload;
+    let decoded: JwtPayload;
+    try {
+      decoded = verify(refToken, Config.REFRESH_TOKEN_SECRET!) as JwtPayload;
+    } catch (err) {
+      return next(createHttpError(401, "Invalid refresh token"));
+    }
 
-    const token = await findRefreshToken(decoded.sub as string);
+    if (!decoded || !decoded.sub) {
+      return next(createHttpError(400, "Invalid token payload"));
+    }
 
+    const existingToken = await findRefreshToken(decoded.sub as string);
+    if (!existingToken) {
+      return next(createHttpError(401, "Refresh token not found or expired"));
+    }
+
+    const user = await findUserById(decoded.sub as string);
+    if (!user) {
+      return next(
+        createHttpError(400, "User associated with the token not found")
+      );
+    }
+
+    // Generate new tokens
     const payload: JwtPayload = {
       sub: String(decoded.sub),
       username: decoded.username,
       email: decoded.email,
     };
 
-    const accessToken = generateAccessToken(payload);
+    const newAccessToken = generateAccessToken(payload);
+    const newRefreshTokenId = await persistRefreshToken(user as UserRespose);
 
-    const user = await findUserById(decoded.sub as string);
+    // Remove old refresh token
+    await deleteRefreshToken(String(existingToken.id));
 
-    if (!user) {
-      const error = createHttpError(400, "User with the token could not find");
-      next(error);
-      return;
-    }
-
-    const newRefreshToken = await persistRefreshToken(user as UserRespose);
-
-    await deleteRefreshToken(String(token?.id));
-
-    const refreshToken = generateRefreshToken({
+    const newRefreshToken = generateRefreshToken({
       ...payload,
-      id: String(newRefreshToken),
+      id: String(newRefreshTokenId),
     });
 
-    res.cookie("accessToken", accessToken, {
+    // Set cookies
+    res.cookie("accessToken", newAccessToken, {
       domain: "localhost",
       sameSite: "strict",
-      // maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
       maxAge: 1000 * 60 * 5, // 5 minutes
       httpOnly: true,
     });
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("refreshToken", newRefreshToken, {
       domain: "localhost",
       sameSite: "strict",
-      // maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
       maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
       httpOnly: true,
     });
@@ -210,7 +220,6 @@ export const getNewAccessToken = async (
     res.status(200).json({ id: user.id });
   } catch (error) {
     next(error);
-    return;
   }
 };
 
