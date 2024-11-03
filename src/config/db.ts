@@ -13,7 +13,7 @@ export const connectToDatabase = async () => {
       user: Config.MYSQL_USER,
       database: Config.MYSQL_DATABASE,
       password: Config.MYSQL_PASSWORD,
-      port: parseInt(Config.MYSQL_PORT!),
+      port: Config.MYSQL_PORT!,
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,

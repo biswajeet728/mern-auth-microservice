@@ -60,3 +60,20 @@ export const persistRefreshToken = async (user: UserRespose) => {
   // Return the userId from the stored refresh token
   return userData?.[0].userId.toString(); // Convert BigInt to string if necessary
 };
+
+export const findRefreshToken = async (token: string) => {
+  const res = await db
+    ?.select()
+    .from(refreshTokens)
+    .where(eq(refreshTokens.userId, BigInt(token)))
+    .execute();
+
+  return res?.[0];
+};
+
+export const deleteRefreshToken = async (token: string) => {
+  await db
+    ?.delete(refreshTokens)
+    .where(eq(refreshTokens.id, Number(token)))
+    .execute();
+};

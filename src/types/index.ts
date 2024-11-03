@@ -10,6 +10,7 @@ export interface UserData {
   email: string;
   password: string;
   image: string | null;
+  refreshToken?: string;
 }
 
 export interface RegisterUserRequest extends Request {

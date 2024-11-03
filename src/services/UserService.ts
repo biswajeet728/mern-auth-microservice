@@ -73,3 +73,18 @@ export const findUserByEmail = async (email: string) => {
 export const comparePassword = async (password: string, hash: string) => {
   return bcrypt.compare(password, hash);
 };
+
+export const findUserById = async (id: string) => {
+  const res = await db
+    ?.select({
+      id: users.id,
+      email: users.email,
+      username: users.username,
+      image: users.image,
+    })
+    .from(users)
+    .where(eq(users.id, Number(id)))
+    .execute();
+
+  return res?.[0];
+};

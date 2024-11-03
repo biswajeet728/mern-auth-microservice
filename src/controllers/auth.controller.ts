@@ -1,17 +1,22 @@
-import { JwtPayload } from "jsonwebtoken";
+import { JwtPayload, verify } from "jsonwebtoken";
 import {
   comparePassword,
   createUser,
   findUserByEmail,
+  findUserById,
 } from "../services/UserService";
 import { RegisterUserRequest, UserRespose } from "../types";
 import { NextFunction, Response } from "express";
 import {
+  deleteRefreshToken,
+  findRefreshToken,
   generateAccessToken,
   generateRefreshToken,
   persistRefreshToken,
 } from "../services/TokenService";
 import createHttpError from "http-errors";
+import { Config } from "../config";
+import logger from "../config/logger";
 
 export const create = async (
   req: RegisterUserRequest,
@@ -44,20 +49,20 @@ export const create = async (
       id: String(newRefreshToken), // Convert to string if necessary
     });
 
-    // Set access token as a cookie
     res.cookie("accessToken", accessToken, {
       domain: "localhost",
       sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
-      httpOnly: true, // Important for security
+      // maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
+      maxAge: 1000 * 60 * 5, // 5 minutes
+      httpOnly: true,
     });
 
-    // Set refresh token as a cookie
     res.cookie("refreshToken", refreshToken, {
       domain: "localhost",
       sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
-      httpOnly: true, // Important for security
+      // maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
+      maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
+      httpOnly: true,
     });
 
     res.status(201).json({ id: user?.id });
@@ -109,16 +114,21 @@ export const login = async (
     res.cookie("accessToken", accessToken, {
       domain: "localhost",
       sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
+      // maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
+      maxAge: 1000 * 60 * 5, // 5 minutes
       httpOnly: true,
     });
 
     res.cookie("refreshToken", refreshToken, {
       domain: "localhost",
       sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
+      // maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
+      maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
       httpOnly: true,
     });
+
+    console.log("Ref Token", refreshToken);
+    console.log("Access Token", accessToken);
 
     res.status(200).json({ id: user.id });
   } catch (error) {
@@ -131,4 +141,106 @@ export const getMe = async (req: RegisterUserRequest, res: Response) => {
   const user = req.user;
 
   res.status(200).json(user);
+};
+
+export const getNewAccessToken = async (
+  req: RegisterUserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const refToken = req.headers.authorization || req.cookies.refreshToken;
+
+    if (!refToken) {
+      const err = createHttpError(401, "Unauthorized");
+      next(err);
+      return;
+    }
+
+    const decoded = verify(
+      refToken,
+      Config.REFRESH_TOKEN_SECRET!
+    ) as JwtPayload;
+
+    const token = await findRefreshToken(decoded.sub as string);
+
+    const payload: JwtPayload = {
+      sub: String(decoded.sub),
+      username: decoded.username,
+      email: decoded.email,
+    };
+
+    const accessToken = generateAccessToken(payload);
+
+    const user = await findUserById(decoded.sub as string);
+
+    if (!user) {
+      const error = createHttpError(400, "User with the token could not find");
+      next(error);
+      return;
+    }
+
+    const newRefreshToken = await persistRefreshToken(user as UserRespose);
+
+    await deleteRefreshToken(String(token?.id));
+
+    const refreshToken = generateRefreshToken({
+      ...payload,
+      id: String(newRefreshToken),
+    });
+
+    res.cookie("accessToken", accessToken, {
+      domain: "localhost",
+      sameSite: "strict",
+      // maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
+      maxAge: 1000 * 60 * 5, // 5 minutes
+      httpOnly: true,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      domain: "localhost",
+      sameSite: "strict",
+      // maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
+      maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
+      httpOnly: true,
+    });
+
+    logger.info("New access token generated");
+
+    res.status(200).json({ id: user.id });
+  } catch (error) {
+    next(error);
+    return;
+  }
+};
+
+export const logout = async (
+  req: RegisterUserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = await findRefreshToken(String(req.user?.id));
+
+    if (!token) {
+      const error = createHttpError(404, "Token not found");
+      next(error);
+      return;
+    }
+
+    await deleteRefreshToken(String(token.id));
+
+    logger.info("Refresh token deleted");
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.json({
+      message: "Logged out successfully",
+    });
+
+    logger.info("Cookies cleared");
+  } catch (error) {
+    next(error);
+    return;
+  }
 };
