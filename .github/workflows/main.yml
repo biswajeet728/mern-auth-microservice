@@ -3,15 +3,33 @@ on:
   push:
     branches:
       - master
+
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check_changes.outputs.has_changes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git fetch --depth=1 origin master
+          if git diff --quiet origin/master -- src/; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
   build-and-push-docker:
     name: Build and Push Docker Image
-    # needs: build-and-test
+    needs: check-changes
+    if: needs.check-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: harry408/auth-service-408 # codersgyan/mernstack_auth_service:build-2
+      IMAGE_NAME: harry408/auth-service-408
       IMAGE_TAG: build-${{ github.run_number }}
-    # if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
