@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "717f1dce-719e-4b11-b914-4fccce9297cc",
+  "id": "2152c252-abb4-4583-a2f7-cdcb374dbe80",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "refresh_tokens": {
@@ -110,6 +110,14 @@
           "notNull": false,
           "autoincrement": false,
           "default": "NULL"
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'user'"
         },
         "updated_at": {
           "name": "updated_at",

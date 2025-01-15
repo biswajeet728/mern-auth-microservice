@@ -10,6 +10,7 @@ export interface UserData {
   email: string;
   password: string;
   image: string | null;
+  role?: string;
   refreshToken?: string;
 }
 

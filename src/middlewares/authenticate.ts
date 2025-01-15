@@ -16,6 +16,7 @@ declare global {
         username: string;
         email: string;
         image: string | null;
+        role: string;
       };
     }
   }
@@ -49,6 +50,7 @@ export const authenticate: RequestHandler = async (req, res, next) => {
       username: payload.username,
       email: payload.email,
       image: payload.image || null,
+      role: payload.role,
     };
 
     next();

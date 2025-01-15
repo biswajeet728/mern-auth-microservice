@@ -33,6 +33,7 @@ export const create = async (
       sub: String(user?.id), // Convert to string to avoid BigInt issues
       username: user?.username,
       email: user?.email,
+      role: user?.role,
     };
 
     console.log(payload, "payload");
@@ -100,6 +101,7 @@ export const login = async (
       sub: String(user.id),
       username: user.username,
       email: user.email,
+      role: user?.role,
     };
 
     const accessToken = generateAccessToken(payload);

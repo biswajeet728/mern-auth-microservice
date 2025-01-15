@@ -14,6 +14,7 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 30 }).unique().notNull(),
   password: varchar("password", { length: 60 }).notNull(),
   image: text("image").default(sql`NULL`),
+  role: varchar("role", { length: 10 }).default(sql`'user'`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });

@@ -62,6 +62,7 @@ export const findUserByEmail = async (email: string) => {
       username: users.username,
       image: users.image,
       password: users.password,
+      role: users.role,
     })
     .from(users)
     .where(eq(users.email, email))

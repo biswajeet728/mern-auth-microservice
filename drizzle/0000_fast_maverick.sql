@@ -13,6 +13,7 @@ CREATE TABLE `users` (
 	`email` varchar(30) NOT NULL,
 	`password` varchar(60) NOT NULL,
 	`image` text DEFAULT NULL,
+	`role` varchar(10) DEFAULT 'user',
 	`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `users_id` PRIMARY KEY(`id`),
