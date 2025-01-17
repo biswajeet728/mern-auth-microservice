@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import createHttpError from "http-errors";
 import {
   JsonWebTokenError,
   JwtPayload,
@@ -7,6 +6,7 @@ import {
   verify,
 } from "jsonwebtoken";
 import { Config } from "../config";
+import { ErrorHandler } from "../services/ErrorService";
 
 declare global {
   namespace Express {
@@ -30,19 +30,21 @@ export const authenticate: RequestHandler = async (req, res, next) => {
     console.log("Token: ", token);
 
     if (!token) {
-      throw createHttpError(401, "Unauthorized: Access token is missing");
+      return next(
+        new ErrorHandler("Unauthorized: Access token is required", 401)
+      );
     }
 
     const decoded = verify(token, Config.JWT_SECRET!);
     if (typeof decoded === "string") {
-      throw createHttpError(403, "Forbidden: Invalid access token");
+      return next(new ErrorHandler("Forbidden: Invalid access token", 403));
     }
     const payload: JwtPayload = decoded;
 
     console.log("Payload: ", payload);
 
     if (!payload) {
-      throw createHttpError(403, "Forbidden: Invalid access token");
+      return next(new ErrorHandler("Forbidden: Invalid access token", 403));
     }
 
     req.user = {
@@ -57,11 +59,13 @@ export const authenticate: RequestHandler = async (req, res, next) => {
   } catch (error) {
     console.log(error, "error");
     if (error instanceof TokenExpiredError) {
-      throw createHttpError(401, "Unauthorized: Access token has expired");
+      return next(
+        new ErrorHandler("Unauthorized: Access token has expired", 401)
+      );
     }
 
     if (error instanceof JsonWebTokenError) {
-      throw createHttpError(403, "Forbidden: Invalid access token");
+      return next(new ErrorHandler("Forbidden: Invalid access token", 403));
     }
 
     next(error);

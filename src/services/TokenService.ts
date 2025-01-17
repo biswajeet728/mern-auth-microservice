@@ -1,10 +1,10 @@
-import createHttpError from "http-errors";
 import { JwtPayload, sign } from "jsonwebtoken";
 import { Config } from "../config";
 import { UserRespose } from "../types";
 import { db } from "../config/db";
 import { refreshTokens } from "../schema";
 import { eq } from "drizzle-orm";
+import { ErrorHandler } from "./ErrorService";
 
 export const generateAccessToken = (payload: JwtPayload) => {
   const token = sign(payload, Config.JWT_SECRET!, {
@@ -36,9 +36,9 @@ export const persistRefreshToken = async (user: UserRespose) => {
   });
 
   if (!res) {
-    throw createHttpError(
-      500,
-      "Failed to store the refresh token in the database"
+    throw new ErrorHandler(
+      "Failed to store the refresh token in the database",
+      500
     );
   }
 
@@ -51,9 +51,9 @@ export const persistRefreshToken = async (user: UserRespose) => {
 
   // Ensure that userData exists and has the expected structure
   if (!userData || userData.length === 0) {
-    throw createHttpError(
-      500,
-      "Failed to retrieve the refresh token from the database"
+    throw new ErrorHandler(
+      "Failed to retrieve the refresh token from the database",
+      500
     );
   }
 

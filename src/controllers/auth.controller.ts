@@ -14,9 +14,9 @@ import {
   generateRefreshToken,
   persistRefreshToken,
 } from "../services/TokenService";
-import createHttpError from "http-errors";
 import { Config } from "../config";
 import logger from "../config/logger";
+import { ErrorHandler } from "../services/ErrorService";
 
 export const create = async (
   req: RegisterUserRequest,
@@ -84,17 +84,13 @@ export const login = async (
     const user = await findUserByEmail(email);
 
     if (!user) {
-      const err = createHttpError(404, "Invalid Credentials !");
-      next(err);
-      return;
+      return next(new ErrorHandler("User not found", 404));
     }
 
     const matchPasword = await comparePassword(password, user.password);
 
     if (!matchPasword) {
-      const err = createHttpError(404, "Invalid Credentials !");
-      next(err);
-      return;
+      return next(new ErrorHandler("Invalid Credentials !", 404));
     }
 
     const payload: JwtPayload = {
@@ -129,9 +125,6 @@ export const login = async (
       httpOnly: true,
     });
 
-    console.log("Ref Token", refreshToken);
-    console.log("Access Token", accessToken);
-
     res.status(200).json({ id: user.id });
   } catch (error) {
     next(error);
@@ -158,29 +151,29 @@ export const getNewAccessToken = async (
       : req.cookies.refreshToken;
 
     if (!refToken) {
-      return next(createHttpError(401, "Unauthorized"));
+      return next(new ErrorHandler("Unauthorized", 401));
     }
 
     let decoded: JwtPayload;
     try {
       decoded = verify(refToken, Config.REFRESH_TOKEN_SECRET!) as JwtPayload;
     } catch (err) {
-      return next(createHttpError(401, "Invalid refresh token"));
+      return next(new ErrorHandler("Invalid refresh token", 401));
     }
 
     if (!decoded || !decoded.sub) {
-      return next(createHttpError(400, "Invalid token payload"));
+      return next(new ErrorHandler("Invalid token payload", 400));
     }
 
     const existingToken = await findRefreshToken(decoded.sub as string);
     if (!existingToken) {
-      return next(createHttpError(401, "Refresh token not found or expired"));
+      return next(new ErrorHandler("Refresh token not found or expired", 401));
     }
 
     const user = await findUserById(decoded.sub as string);
     if (!user) {
       return next(
-        createHttpError(400, "User associated with the token not found")
+        new ErrorHandler("User associated with the token not found", 400)
       );
     }
 
@@ -234,9 +227,7 @@ export const logout = async (
     const token = await findRefreshToken(String(req.user?.id));
 
     if (!token) {
-      const error = createHttpError(404, "Token not found");
-      next(error);
-      return;
+      return next(new ErrorHandler("Token not found", 404));
     }
 
     await deleteRefreshToken(String(token.id));

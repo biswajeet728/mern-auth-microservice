@@ -1,46 +1,40 @@
 import { NextFunction, Request, Response } from "express";
-import { HttpError } from "http-errors";
 import { v4 as uuidv4 } from "uuid";
 import logger from "../config/logger";
+import { ErrorHandler } from "../services/ErrorService";
 
 export const globalErrorHandler = (
-  err: HttpError,
+  err: ErrorHandler,
   req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ) => {
-  const errorId = uuidv4();
-  const statusCode = err.status || 500;
-
+  // Assign default values if not provided
+  const errorId = uuidv4(); // Unique identifier for tracking
+  const statusCode = err.statusCode || 500;
+  const message =
+    err.name === "CastError"
+      ? "Invalid ID"
+      : err.message || "Internal Server Error";
   const isProduction = process.env.NODE_ENV === "prod";
-  /// todo: error message should be more user friendly if 400 then send to client
-  let message = "Internal server error";
-  if (statusCode === 400) {
-    message = err.message;
-  }
 
-  logger.error(err.message, {
+  // Log the error
+  logger.error("Error occurred", {
     id: errorId,
-    statusCode,
-    error: err.stack,
+    message: err.message,
+    statusCode: statusCode,
+    stack: err.stack,
     path: req.path,
     method: req.method,
   });
 
+  // Respond with error details
   res.status(statusCode).json({
-    errors: [
-      {
-        ref: errorId,
-        type: err.name,
-        msg: message,
-        path: req.path,
-        method: req.method,
-        location: "server",
-        stack: isProduction ? null : err.stack,
-      },
-    ],
+    errorId,
+    success: false,
+    message,
+    path: req.path,
+    method: req.method,
+    ...(isProduction ? {} : { stack: err.stack }), // Include stack only in non-production
   });
 };

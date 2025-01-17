@@ -1,9 +1,9 @@
-import createHttpError from "http-errors";
 import { UserData } from "../types";
 import { db } from "../config/db";
 import { users } from "../schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
+import { ErrorHandler } from "./ErrorService";
 
 export const createUser = async ({
   username,
@@ -18,10 +18,7 @@ export const createUser = async ({
     .execute();
 
   if (user?.length) {
-    throw createHttpError(409, {
-      message: "User already exists",
-      context: { email },
-    });
+    throw new ErrorHandler("User already exists", 409);
   }
 
   const saltRounds = 10;
@@ -46,11 +43,7 @@ export const createUser = async ({
 
     return res?.[0];
   } catch (error) {
-    const err = createHttpError(
-      500,
-      "Failed to store the data in the database"
-    );
-    throw err;
+    throw new ErrorHandler("Failed to create user", 500);
   }
 };
 
