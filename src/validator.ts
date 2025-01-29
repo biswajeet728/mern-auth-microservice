@@ -19,11 +19,7 @@ export const registerSchema = z.object({
     .string({
       required_error: "Password is required",
     })
-    .min(6, "Password must be at least 6 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    ),
+    .min(6, "Password must be at least 6 characters"),
   image: z.string().default(""),
   role: z.enum(["admin", "user"]).default("user"),
 });

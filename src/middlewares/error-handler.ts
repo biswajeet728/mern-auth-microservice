@@ -18,15 +18,15 @@ export const globalErrorHandler = (
       : err.message || "Internal Server Error";
   const isProduction = process.env.NODE_ENV === "prod";
 
-  // Log the error
-  logger.error("Error occurred", {
-    id: errorId,
-    message: err.message,
-    statusCode: statusCode,
-    stack: err.stack,
-    path: req.path,
-    method: req.method,
-  });
+  // // Log the error
+  // logger.error("Error occurred", {
+  //   id: errorId,
+  //   message: err.message,
+  //   statusCode: statusCode,
+  //   stack: err.stack,
+  //   path: req.path,
+  //   method: req.method,
+  // });
 
   // Respond with error details
   res.status(statusCode).json({

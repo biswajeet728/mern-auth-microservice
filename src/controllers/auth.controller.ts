@@ -54,7 +54,7 @@ export const create = async (
       domain: "localhost",
       sameSite: "strict",
       // maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
-      maxAge: 1000 * 60 * 5, // 5 minutes
+      maxAge: 1000 * 60, // 1 minute
       httpOnly: true,
     });
 
@@ -113,7 +113,7 @@ export const login = async (
       domain: "localhost",
       sameSite: "strict",
       // maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
-      maxAge: 1000 * 60 * 5, // 5 minutes
+      maxAge: 1000 * 60, // 1 minute
       httpOnly: true,
     });
 
@@ -182,6 +182,7 @@ export const getNewAccessToken = async (
       sub: String(decoded.sub),
       username: decoded.username,
       email: decoded.email,
+      role: decoded.role,
     };
 
     const newAccessToken = generateAccessToken(payload);
@@ -199,7 +200,7 @@ export const getNewAccessToken = async (
     res.cookie("accessToken", newAccessToken, {
       domain: "localhost",
       sameSite: "strict",
-      maxAge: 1000 * 60 * 5, // 5 minutes
+      maxAge: 1000 * 60, // 1 minute
       httpOnly: true,
     });
 
