@@ -2,7 +2,7 @@ import { UserData } from "../types";
 import { db } from "../config/db";
 import { users } from "../schema";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { ErrorHandler } from "./ErrorService";
 
 export const createUser = async ({
