@@ -17,6 +17,7 @@ const envSchema = z.object({
   NODE_ENV: z.string(),
   MYSQL_PORT: z.string().regex(/^\d+$/).transform(Number), // Ensures MYSQL_PORT is a number
   MYSQL_PASSWORD: z.string(),
+  MYSQL_HOST: z.string(),
   MYSQL_USER: z.string(),
   MYSQL_DATABASE: z.string(),
   MYSQL_URI: z.string().url(),
@@ -39,6 +40,7 @@ export const Config = {
   NODE_ENV: parsedEnv.data.NODE_ENV,
   MYSQL_PORT: parsedEnv.data.MYSQL_PORT,
   MYSQL_PASSWORD: parsedEnv.data.MYSQL_PASSWORD,
+  MYSQL_HOST: parsedEnv.data.MYSQL_HOST,
   MYSQL_USER: parsedEnv.data.MYSQL_USER,
   MYSQL_DATABASE: parsedEnv.data.MYSQL_DATABASE,
   MYSQL_URI: parsedEnv.data.MYSQL_URI,

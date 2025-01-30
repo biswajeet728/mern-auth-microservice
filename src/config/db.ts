@@ -9,7 +9,7 @@ export let connection: mysql.Connection | null = null;
 export const connectToDatabase = async () => {
   try {
     connection = await mysql.createConnection({
-      host: "localhost",
+      host: Config.MYSQL_HOST,
       user: Config.MYSQL_USER,
       database: Config.MYSQL_DATABASE,
       password: Config.MYSQL_PASSWORD,

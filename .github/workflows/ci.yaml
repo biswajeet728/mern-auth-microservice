@@ -12,6 +12,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
         env:
+          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
           MYSQL_URI: ${{ secrets.MYSQL_URI }}
           MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
